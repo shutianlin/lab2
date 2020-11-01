@@ -1,0 +1,334 @@
+---
+title: "Homework 5"
+author: "Shutian Lin"
+date: "2020/10/22"
+output: 
+  html_document: 
+    highlight: tango
+    theme: cerulean
+    fig_width: 10
+    fig_height: 6
+    css: style.css
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(cache=TRUE, error=FALSE, message=FALSE, warning=FALSE, tidy.opts=list(width.cutoff=60),tidy=FALSE)
+```
+
+```{r,echo=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(boot)
+library(readr)
+```
+
+
+# Question 1 - Sampling distribution for the sample variance if IQ scores: part I
+
+## a) The sample size of interest is 20.
+```{r}
+n <- 20
+replicates <- 10000
+var_1a <- replicate(replicates,
+          {
+            temp <- rnorm(n,
+                          100,
+                          15)
+            var(temp)
+          })
+
+hist(var_1a, probability = TRUE,
+     ylim = c(0, 0.006),
+     col = "skyblue",
+     xlab = "sample variance (n=20)",
+     ylab = "proportion",
+     main = "Sampling distribution for sample variance")
+lines(density(var_1a), col = "maroon", lwd = 4)
+```
+ 
+  It does not appear to be normally distributed, because the distribution is right-skewed. 
+
+## b) Normal or not?
+```{r}
+normal_density <- dnorm(1:800, mean(var_1a), sd(var_1a))
+
+
+plot(density(var_1a),
+     lwd = 4,
+     col = "skyblue",
+     xlab = "variance",
+     main = "Sampling distribution for sample variance")
+lines(1:800, normal_density,
+      col = "red",
+      lwd = 4)
+legend("topright", legend = c("sample variance", "normal"),
+       col = c("skyblue", "red"), lwd=2)
+```
+It does not appear to be normally distributed. Compared to the normal distribution, the distribution is right-skewed. 
+
+## c) qq plot
+```{r}
+qqnorm(var_1a,
+       main = "qq-norm plot of the sample variance",
+       ylab = "sample variance values")
+qqline(var_1a, col = "blue", lwd = 2)
+```
+No, because the distribution appears to be a curve and does not match the qqline well. Both two ends of the distribution for the sample variance are above the line.  
+
+## d) Larger sample size.
+```{r}
+n <- 175
+replicates <- 10000
+var_1d <- replicate(replicates,
+          {
+            temp <- rnorm(n,
+                          100,
+                          15)
+            var(temp)
+          })
+```
+```{r}
+qqnorm(var_1d,
+       main = "qq-norm plot of the sample variance",
+       ylab = "sample variance values")
+qqline(var_1d, col = "blue", lwd = 2)
+```
+Yes, this distribution appear to be normally distributed. Because the distribution appears to be a nearly straight line and it matchs the qqline well. 
+
+
+# Question 2 - Sampling distribution for the sample variance: part II
+
+## a) Plot the χ2 distribution with df = 19 (use dchisq).
+```{r}
+plot(seq(0, 50, by=0.01), 
+     dchisq(seq(0, 50, by=0.01), df=19),
+     type = "l",
+     xlab = "y",
+     ylab = "density",
+     lwd = 3,
+     col = "steelblue",
+     main = "Chi-square distribution with df=19")
+```
+
+## b) Simulate a sampling distribution for the rescaled sample variance. Find the sampling distribution of 19s2/225 based on a sample size of 20
+```{r}
+n <- 20
+replicates <- 10000
+var_2b <- replicate(replicates,
+          {
+            temp <- rnorm(n,
+                          100,
+                          15)
+            19*var(temp)/225
+          })
+
+hist(var_2b, probability = TRUE,
+     ylim = c(0, 0.07),
+     col = "skyblue",
+     xlab = "rescaled variance (n=20)",
+     ylab = "proportion",
+     main = "Sampling distribution for rescaled sample variance")
+lines(density(var_2b), col = alpha("lightgreen", 0.7), lwd = 4)
+lines(seq(0, 50, by=0.01), 
+     dchisq(seq(0, 50, by=0.01), df=19),
+     col = alpha("maroon", 0.4), lwd = 4)
+legend("topright", 
+       legend = c("chi-square distribution", "sampling distribution"),
+       col = c("maroon", "lightgreen"), 
+       lwd=2)
+```
+
+# Question 3 - CLT applied to a sample from a Beta distribution.
+
+## a) Plot the beta distribution with α =4 and β =2 (use dbeta).
+```{r}
+plot(seq(0, 1, by=0.01), 
+     dbeta(seq(0, 1, by=0.01), shape1=4, shape2=2),
+     type = "l",
+     xlab = "y",
+     ylab = "density",
+     lwd = 3,
+     col = "steelblue",
+     main = "Beta distribution with α=4 and β=2")
+```
+
+
+## b) Simulate the sampling distribution for the sample mean (n = 5).
+```{r}
+n <- 5
+replicates <- 10000
+mean_3b <- replicate(replicates,
+          {
+            temp <- rbeta(n,
+                          shape1=4, 
+                          shape2=2)
+            mean(temp)
+          })
+
+alpha <- 4
+beta <- 2
+mean_value <- alpha/(alpha + beta)
+var_value <- alpha*beta/(alpha + beta)**2/(alpha + beta + 1)
+sd <- sqrt(var_value)/sqrt(n)
+```
+```{r}
+hist(mean_3b, 
+     probability = TRUE,
+     breaks = 30,
+     col = "skyblue",
+     xlab = "sample mean (n=5)",
+     ylab = "proportion",
+     main = "Sampling distribution for sample mean (n=5)")
+lines(density(rnorm(10000, mean_value, sd)),
+     col = alpha("maroon", 0.4), lwd = 4)
+```
+
+## c) Comment on how good the normal approximation appears to be with respect to the sampling distribution of the sample mean based on 5 observations from a beta distribution with α = 4 and β =2.
+The normal approximation appears to be good because its distribution is similar to the sampling distribution of the sample mean.
+
+
+## d) Simulate the sampling distribution for the sample mean (n=30).
+```{r}
+n_3d <- 30
+replicates <- 10000
+mean_3d <- replicate(replicates,
+          {
+            temp <- rbeta(n_3d,
+                          shape1=4, 
+                          shape2=2)
+            mean(temp)
+          })
+
+sd_3d <- sqrt(var_value)/sqrt(n_3d)
+```
+```{r}
+hist(mean_3d, 
+     probability = TRUE,
+     breaks = 30,
+     ylim = c(0, 13),
+     col = "skyblue",
+     xlab = "sample mean (n=30)",
+     ylab = "proportion",
+     main = "Sampling distribution for sample mean (n=30)")
+lines(density(rnorm(10000, mean_value, sd_3d)),
+     col = alpha("maroon", 0.4), lwd = 4)
+```
+
+## e) Comment on how good the normal approximation appears to be with respect to the sampling distribution of the sample mean based on 30 observations from a beta distribution with α =4 and β =2
+The sampling distribution is well approximated by the normal distribution. Because the distribution of normal approximation is similar to the sampling distribution of the sample mean
+And the approximation of sample mean based on 30 observations is better than the approximation of sample mean based on 5 observations.
+
+# Question 4 - Gestation times
+
+## a) What is the chance that the gestation time of one of the randomly selected women will be greater than or equal to 282 days?
+```{r}
+prob_4a<-1-pnorm(282, 280, 10)
+cat(paste("The chance that the gestation time of one of the randomly selected women will be greater than or equal to 282 days is:", round(prob_4a,3)))
+```
+
+## b) What is the chance that the average gestation time of 50 women is greater than or equal to 282 days?
+ 
+```{r}
+prob_4b<-1-pnorm(282, 280, 10/sqrt(50))
+cat(paste("The chance that the average gestation time of 50 women is greater than or equal to 282 days is:", round(prob_4b,3)))
+```
+
+## c) Suppose the researchers determined that the average gestation period of 50 women who gave birth in July was 275 days. Perform a hypothesis test to see if July is different (report the H0, Ha, p-value, and conclusion).
+ $H_0:$ The average gestation period of women who gave birth in July was 280 days.
+ Let μ denotes the mean of gestation period of women who gave birth in July:
+ $$H_0: \mu = 280$$
+ $H_a:$ The average gestation period of women who gave birth in July was not 280 days.
+ $$H_a: \mu \neq 280$$
+
+
+```{r}
+#Using a 0.05-alpha level
+p_value <- 2 * pnorm(275, 280, 10/sqrt(50))
+cat(paste("The P-value is:", round(p_value,5)))
+```
+Using a 0.05-alpha level, the P-value is: 0.00041, which is less than 0.05.
+There is evidence against the null hypothesis that the average gestation period of 50 women who gave birth in July was 280 days. It appears as though the average gestation period of 50 women who gave birth in July was different.
+
+# Question 5 - Data analysis of means
+
+```{r}
+#load data
+payment <- read_csv("PaymentAndValue.csv")
+```
+
+
+## a) Make a histogram of the payments received by hospitals for hip/knee replacements. Describe the distribution (shape, spread, and mean).
+```{r}
+payment %>%
+  filter(`Hospitalization type` == "hip/knee replacement") %>%
+  ggplot(aes(Payment)) +
+  geom_histogram(fill = "skyblue", col = "lightgreen") +
+  geom_vline(aes(xintercept=mean(Payment)),linetype=5,col="red") +
+  ggtitle("Histogram of the payments received by hospitals for hip/knee replacements")
+```
+The distribution is single-peaked and right-skewed. The data range from around 15000 to 40000. The mean is between 20000 and 22500 in the red line.
+
+
+## b) Report the point estimate of the mean payment and the corresponding 95% conﬁdence interval for hip/knee replacements.
+```{r}
+pay_vac <- (payment %>%
+  filter(`Hospitalization type` == "hip/knee replacement"))$Payment
+
+estimate <- mean(pay_vac)
+lb <- quantile(pay_vac, 0.025)
+ub <- quantile(pay_vac, 0.975)
+cat(paste("The point estimate is: ", round(estimate, 3)))
+cat(paste(". The 95% confidence interval is: ", round(lb,3), "to", round(ub, 3)))
+```
+
+## c) Test of significance.
+
+Null hypothesis: the mean payment for a hip/knee replacement this year are equal to the previous year.
+Alternative hypothesis: the mean payment for a hip/knee replacement are different from the previous year.
+
+Let μ denotes the mean payment for a hip/knee replacement
+$$H_0: \mu = 20600$$
+$$H_a: \mu \neq 20600$$
+```{r}
+#Using a 0.05-alpha level
+test_5c <- t.test(pay_vac, mu=20600)
+cat(paste("The value of the test statistic is: ", round(test_5c$statistic, 3)))
+cat(paste("The p-value is: ", round(test_5c$p.value, 8)))
+```
+Using a 0.05-alpha level, the P-value is less than 0.05. There is evidence against the null hypothesis that the mean payment for a hip/knee replacement this year are equal to the previous year. It appears as though the mean payment for a hip/knee replacement are different from the previous year.
+
+
+## d) Make side-by-side boxplots for the the payments by the different hospitalization types. Describe what you see.
+```{r}
+payment %>%
+  ggplot(aes(x=`Hospitalization type`, y=Payment, fill = `Hospitalization type`)) +
+  geom_boxplot() +
+  ggtitle("Boxplots for the payments by the different hospitalization types")
+```
+The payments appear to be right-skewed. The IQR box and median for heart attack are higher than other types. The data of hip/knee replacement and pneumonia are more variable than others, because they have long whiskers and more outliers.
+
+## e) Comparison of pneumonia and heart failure payments.
+```{r}
+pneumonia <- payment$Payment[payment$`Hospitalization type` == "pneumonia"]
+heart_fail <- payment$Payment[payment$`Hospitalization type` == "heart failure"]
+
+pneumonia_lb <- quantile(pneumonia, 0.005) %>% round(3)
+pneumonia_ub <- quantile(pneumonia, 0.995) %>% round(3)
+
+heart_lb <- quantile(heart_fail, 0.005) %>% round(3)
+heart_ub <- quantile(heart_fail, 0.995) %>% round(3)
+
+cat(paste("The 99% confidence interval for heart failure hospitalizations is: ", heart_lb, "to", heart_ub))
+
+cat(paste("The 99% confidence interval for pneumonia hospitalizations is: ", pneumonia_lb, "to", pneumonia_ub))
+
+
+test_5e <- t.test(pneumonia, heart_fail, conf.level = 0.99)
+cat(paste("The point estimate for pneumonia is: ", round(test_5e$estimate[1], 2)))
+cat(paste(". The point estimate for heart failure is: ", round(test_5e$estimate[2], 2)))
+```
+ 
+The point estimate for heart failure is: 17681.78. The 99% confidence interval for heart failure hospitalizations is: 14494.94 to 22057.74.
+The point estimate for pneumonia is: 18292.28. The 99% confidence interval for pneumonia hospitalizations is: 12591.32 to 25264.2.
+There is no evidence that the average payments differ according to the confidence intervals and point estimates. Because the 99% confidence interval for heart failure hospitalizations is contained in the 99% confidence interval for pneumonia hospitalizations.

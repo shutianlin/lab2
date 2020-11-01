@@ -1,0 +1,5 @@
+remotes::install_git("https://github.com/shutianlin/lab_2.git",
+                     credentials=git2r::cred_user_pass("shutianlin", "Lst2194633$"))
+
+library(lab2)
+pay_boxplot('Average Covered Charges')
