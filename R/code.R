@@ -1,4 +1,6 @@
-
+#load libraries
+library(ggplot2)
+library(dplyr)
 #' Make a boxplot of payments by DRG code
 #'
 #' @param type type of payments you want, can be 'Average Covered Charges', 'Average Total Payments', or 'Average Medicare Payments'
