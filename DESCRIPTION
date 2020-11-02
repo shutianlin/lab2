@@ -5,7 +5,6 @@ Version: 0.1.0
 Author: Shutian Lin
 Maintainer: The package maintainer <yourself@somewhere.net>
 Description: The package has DRG data and two functions. 
-
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
