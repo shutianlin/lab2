@@ -24,7 +24,7 @@ pay_boxplot <- function(type)
 #'
 #' @param stat name of the statistics you want, can be 'Mean', 'Median', or 'Sd'
 #'
-#' @return A boxplot of payments by DRG code
+#' @return A dataframe that includes DRG codes and the statistics you want for average Medicare payments
 #' @export
 #'
 #' @examples cal_stats('Mean')
