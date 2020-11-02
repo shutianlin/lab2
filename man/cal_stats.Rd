@@ -10,7 +10,7 @@ cal_stats(stat)
 \item{stat}{name of the statistics you want, can be 'Mean', 'Median', or 'Sd'}
 }
 \value{
-A boxplot of payments by DRG code
+A dataframe that includes DRG codes and the statistics you want for average Medicare payments
 }
 \description{
 Calculates statistics over all of the DRG codes for average Medicare payments
